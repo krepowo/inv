@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{% block title %}{% endblock %} - Inventory System</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    </head>
+    <body class="bg-emerald-50 font-sans leading-normal tracking-normal text-gray-800">
+        <nav class="bg-emerald-600 p-4 shadow-lg sticky top-0 z-50">
+            <div class="container mx-auto flex justify-between items-center">
+                <a href="/" class="text-white text-xl font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-boxes-stacked"></i> Inventory & Stok
+                </a>
+                <div class="space-x-4">
+                    <a href="/" class="text-emerald-100 hover:text-white transition duration-300">
+                        <i class="fa-solid fa-gauge-high"></i> Dashboard
+                    </a>
+                    <a href="/kategori" class="text-emerald-100 hover:text-white transition duration-300">
+                        <i class="fa-solid fa-list"></i> Kategori
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container mx-auto mt-8 px-4 mb-12">{% block content %} {% endblock %}</div>
+    </body>
+</html>

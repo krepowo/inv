@@ -1,0 +1,63 @@
+{% extends "base.html" %} {% block title %}Dashboard{% endblock %} {% block content %}
+<div class="flex justify-between items-center mb-6">
+    <div>
+        <h1 class="text-3xl font-bold text-emerald-800">Stok Barang</h1>
+        <p class="text-gray-500 text-sm mt-1">Kelola inventory barang dengan mudah.</p>
+    </div>
+    <a
+        href="/tambah"
+        class="bg-emerald-600 text-white px-5 py-2.5 rounded-lg hover:bg-emerald-700 shadow-md transition duration-300 flex items-center"
+    >
+        <i class="fa-solid fa-plus-circle mr-2"></i> Tambah Barang
+    </a>
+</div>
+
+<div class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
+    <table class="min-w-full w-full table-auto">
+        <
+        <thead>
+            <tr class="bg-emerald-500 text-white uppercase text-xs leading-normal tracking-wider">
+                <th class="py-3 px-6 text-left rounded-tl-lg">Nama Barang</th>
+                <th class="py-3 px-6 text-left">Kategori</th>
+                <th class="py-3 px-6 text-center">Stok</th>
+                <th class="py-3 px-6 text-right">Harga (Rp)</th>
+                <th class="py-3 px-6 text-center rounded-tr-lg">Aksi</th>
+            </tr>
+        </thead>
+        <tbody class="text-gray-600 text-sm font-light">
+            {% for item, kat in data %}
+            <tr class="border-b border-gray-200 hover:bg-emerald-50 transition duration-150">
+                <td class="py-3 px-6 text-left font-medium">{{ item.nama_barang }}</td>
+                <td class="py-3 px-6 text-left">
+                    <span class="bg-emerald-100 text-emerald-700 py-1 px-3 rounded-full text-xs font-semibold"
+                        >{{ kat.nama_kategori }}</span
+                    >
+                </td>
+                <td class="py-3 px-6 text-center">{{ item.stok }}</td>
+                <td class="py-3 px-6 text-right font-mono">Rp {{ "{:,.0f}".format(item.harga).replace(',', '.') }}</td>
+
+                <td class="py-3 px-6 text-center">
+                    <div class="flex item-center justify-center">
+                        <a
+                            href="/edit/{{ item.id }}"
+                            class="w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 hover:bg-yellow-200 flex items-center justify-center mx-1 transition"
+                            title="Edit"
+                        >
+                            <i class="fa-solid fa-pen"></i>
+                        </a>
+                        <a
+                            href="/hapus/{{ item.id }}"
+                            onclick="return confirm('Yakin ingin menghapus barang ini?')"
+                            class="w-8 h-8 rounded-full bg-red-100 text-red-600 hover:bg-red-200 flex items-center justify-center mx-1 transition"
+                            title="Hapus"
+                        >
+                            <i class="fa-solid fa-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% else %} {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

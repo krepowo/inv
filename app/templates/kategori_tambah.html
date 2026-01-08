@@ -1,0 +1,38 @@
+{% extends "base.html" %} {% block title %}Tambah Kategori{% endblock %} {% block content %}
+<div class="max-w-md mx-auto bg-white p-8 rounded-xl shadow-lg border-t-4 border-emerald-500">
+    <h2 class="text-2xl font-bold mb-6 text-emerald-800 text-center">Tambah Kategori Baru</h2>
+
+    <form action="/kategori/tambah" method="POST">
+        <div class="mb-6">
+            <label class="block text-gray-700 font-semibold mb-2">Nama Kategori</label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fa-solid fa-tag text-gray-400"></i>
+                </div>
+                <input
+                    type="text"
+                    name="nama_kategori"
+                    placeholder="Contoh: Elektronik"
+                    class="w-full pl-10 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
+                    required
+                />
+            </div>
+        </div>
+
+        <div class="flex gap-2">
+            <a
+                href="/kategori"
+                class="w-1/2 bg-gray-200 text-gray-700 text-center py-2 rounded-lg hover:bg-gray-300 transition"
+            >
+                Batal
+            </a>
+            <button
+                type="submit"
+                class="w-1/2 bg-emerald-600 text-white font-bold py-2 rounded-lg hover:bg-emerald-700 transition shadow-lg transform hover:-translate-y-0.5"
+            >
+                <i class="fa-solid fa-save mr-1"></i> Simpan
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

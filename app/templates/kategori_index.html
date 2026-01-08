@@ -1,0 +1,49 @@
+{% extends "base.html" %} {% block title %}Kelola Kategori{% endblock %} {% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-emerald-800"><i class="fa-solid fa-list mr-2"></i>Daftar Kategori</h2>
+    <a
+        href="/kategori/tambah"
+        class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 shadow transition duration-300"
+    >
+        <i class="fa-solid fa-plus mr-1"></i> Tambah Kategori
+    </a>
+</div>
+
+<div class="bg-white shadow-lg rounded-lg overflow-hidden border border-emerald-100">
+    <table class="w-full">
+        <thead class="bg-emerald-500 text-white">
+            <tr>
+                <th class="py-3 px-6 text-left w-12">#</th>
+                <th class="py-3 px-6 text-left">Nama Kategori</th>
+                <th class="py-3 px-6 text-center w-32">Aksi</th>
+            </tr>
+        </thead>
+        <tbody class="text-gray-700">
+            {% for item in data %}
+            <tr class="border-b border-gray-100 hover:bg-emerald-50">
+                <td class="py-3 px-6 text-center font-bold text-emerald-600">{{ loop.index }}</td>
+                <td class="py-3 px-6">{{ item.nama_kategori }}</td>
+                <td class="py-3 px-6 text-center">
+                    <div class="flex item-center justify-center">
+                        <a href="/kategori/edit/{{ item.id }}" class="text-yellow-500 hover:text-yellow-600 mx-2">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </a>
+                        <a
+                            href="/kategori/hapus/{{ item.id }}"
+                            onclick="return confirm('Hapus kategori ini?')"
+                            class="text-red-500 hover:text-red-600 mx-2"
+                        >
+                            <i class="fa-solid fa-trash-can"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="2" class="text-center py-4 text-gray-400">Belum ada kategori.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
