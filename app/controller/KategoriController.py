@@ -3,12 +3,10 @@ from app import db
 from flask import render_template, request, redirect, url_for
 
 def index():
-    # Menampilkan semua kategori
     data = Kategori.query.all()
     return render_template('kategori_index.html', data=data)
 
 def form_tambah():
-    # Menampilkan form
     return render_template('kategori_tambah.html')
 
 def save():

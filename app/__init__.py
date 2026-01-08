@@ -10,4 +10,4 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 from app import routes
-from app.model import kategori, barang  # Import model yang akan kita buat
+from app.model import kategori, barang, user
