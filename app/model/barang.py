@@ -1,12 +1,39 @@
 from app import db
-from app.model.kategori import Kategori
+from datetime import datetime
 
 class Barang(db.Model):
+    __tablename__ = 'barang'
+    
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    kode_barang = db.Column(db.String(50), unique=True, nullable=False)
     nama_barang = db.Column(db.String(100), nullable=False)
-    harga = db.Column(db.Integer, nullable=False)
-    stok = db.Column(db.Integer, nullable=False)
-    kategori_id = db.Column(db.BigInteger, db.ForeignKey(Kategori.id, ondelete='CASCADE'))
+    deskripsi = db.Column(db.Text, nullable=True)
+    harga_beli = db.Column(db.Integer, nullable=False, default=0)
+    harga_jual = db.Column(db.Integer, nullable=False, default=0)
+    stok = db.Column(db.Integer, nullable=False, default=0)
+    stok_minimum = db.Column(db.Integer, nullable=False, default=10)
+    satuan = db.Column(db.String(20), nullable=False, default='pcs')
+    kategori_id = db.Column(db.BigInteger, db.ForeignKey('kategori.id', ondelete='CASCADE'))
+    supplier_id = db.Column(db.BigInteger, db.ForeignKey('supplier.id', ondelete='SET NULL'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationship
+    transaksi = db.relationship('Transaksi', backref='barang', lazy='dynamic')
+    
+    def is_low_stock(self):
+        """Check if stock is below minimum threshold"""
+        return self.stok <= self.stok_minimum
+    
+    def update_stok(self, jumlah, tipe):
+        """Update stock based on transaction type"""
+        if tipe == 'masuk':
+            self.stok += jumlah
+        elif tipe == 'keluar':
+            if self.stok >= jumlah:
+                self.stok -= jumlah
+            else:
+                raise ValueError('Stok tidak mencukupi')
     
     def __repr__(self):
         return '<Barang {}>'.format(self.nama_barang)

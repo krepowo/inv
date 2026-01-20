@@ -1,0 +1,177 @@
+{% extends "base.html" %} {% block title %}Tambah Transaksi{% endblock %} {% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">
+            {% if tipe == 'masuk' %}
+            <i class="fa-solid fa-arrow-down text-green-600"></i> Transaksi Barang Masuk {% else %}
+            <i class="fa-solid fa-arrow-up text-orange-600"></i> Transaksi Barang Keluar {% endif %}
+        </h1>
+        <p class="text-gray-500 text-sm mt-1">
+            {% if tipe == 'masuk' %} Catat pembelian atau penambahan stok barang {% else %} Catat penjualan atau
+            pengurangan stok barang {% endif %}
+        </p>
+    </div>
+
+    <div class="bg-white p-8 rounded-lg shadow-md">
+        <form action="/transaksi/tambah" method="POST">
+            <input type="hidden" name="tipe_transaksi" value="{{ tipe }}" />
+
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">
+                        Kode Transaksi <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        name="kode_transaksi"
+                        value="{{ kode_transaksi }}"
+                        readonly
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100"
+                    />
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">
+                        Barang <span class="text-red-500">*</span>
+                    </label>
+                    <select
+                        name="barang_id"
+                        id="barang_select"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        required
+                    >
+                        <option value="">Pilih Barang</option>
+                        {% for b in list_barang %}
+                        <option
+                            value="{{ b.id }}"
+                            data-stok="{{ b.stok }}"
+                            data-harga-beli="{{ b.harga_beli }}"
+                            data-harga-jual="{{ b.harga_jual }}"
+                            data-satuan="{{ b.satuan }}"
+                        >
+                            {{ b.kode_barang }} - {{ b.nama_barang }} (Stok: {{ b.stok }} {{ b.satuan }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <p class="text-sm text-gray-500 mt-1" id="stok_info"></p>
+                </div>
+
+                {% if tipe == 'masuk' %}
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2"> Supplier </label>
+                    <select
+                        name="supplier_id"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    >
+                        <option value="">Pilih Supplier (Opsional)</option>
+                        {% for s in list_supplier %}
+                        <option value="{{ s.id }}">{{ s.nama_supplier }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">
+                        Jumlah <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                        type="number"
+                        name="jumlah"
+                        id="jumlah_input"
+                        min="1"
+                        value="1"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        required
+                    />
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">
+                        Harga Satuan (Rp) <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                        type="number"
+                        name="harga_satuan"
+                        id="harga_input"
+                        min="0"
+                        value="0"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        required
+                    />
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2"> Total Harga </label>
+                    <input
+                        type="text"
+                        id="total_display"
+                        value="Rp 0"
+                        readonly
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 font-bold text-lg"
+                    />
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2"> Keterangan </label>
+                    <textarea
+                        name="keterangan"
+                        rows="3"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    ></textarea>
+                </div>
+            </div>
+
+            <div class="flex gap-4 mt-8">
+                <button
+                    type="submit"
+                    class="flex-1 {% if tipe == 'masuk' %}bg-green-600 hover:bg-green-700{% else %}bg-orange-600 hover:bg-orange-700{% endif %} text-white font-bold py-3 px-6 rounded-lg transition duration-300"
+                >
+                    <i class="fa-solid fa-save mr-2"></i> Simpan Transaksi
+                </button>
+                <a
+                    href="/transaksi"
+                    class="flex-1 bg-gray-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-600 transition duration-300 text-center"
+                >
+                    <i class="fa-solid fa-times mr-2"></i> Batal
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Auto-fill harga and calculate total
+    const barangSelect = document.getElementById("barang_select");
+    const jumlahInput = document.getElementById("jumlah_input");
+    const hargaInput = document.getElementById("harga_input");
+    const totalDisplay = document.getElementById("total_display");
+    const stokInfo = document.getElementById("stok_info");
+    const tipe = "{{ tipe }}";
+
+    barangSelect.addEventListener("change", function () {
+        const option = this.options[this.selectedIndex];
+        const stok = option.dataset.stok || 0;
+        const satuan = option.dataset.satuan || "pcs";
+
+        if (tipe === "masuk") {
+            hargaInput.value = option.dataset.hargaBeli || 0;
+        } else {
+            hargaInput.value = option.dataset.hargaJual || 0;
+        }
+
+        stokInfo.textContent = `Stok tersedia: ${stok} ${satuan}`;
+        calculateTotal();
+    });
+
+    function calculateTotal() {
+        const jumlah = parseInt(jumlahInput.value) || 0;
+        const harga = parseInt(hargaInput.value) || 0;
+        const total = jumlah * harga;
+        totalDisplay.value = "Rp " + total.toLocaleString("id-ID");
+    }
+
+    jumlahInput.addEventListener("input", calculateTotal);
+    hargaInput.addEventListener("input", calculateTotal);
+</script>
+{% endblock %}

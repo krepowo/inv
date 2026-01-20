@@ -1,0 +1,128 @@
+{% extends "base.html" %} {% block title %}Detail Transaksi{% endblock %} {% block content %}
+<div class="mb-6 flex items-center justify-between">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-800">Detail Transaksi</h1>
+        <p class="text-gray-500 text-sm mt-1">Informasi lengkap transaksi</p>
+    </div>
+    <a href="/transaksi" class="bg-gray-500 text-white px-5 py-2.5 rounded-lg hover:bg-gray-600 transition">
+        <i class="fa-solid fa-arrow-left mr-2"></i> Kembali
+    </a>
+</div>
+
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-lg shadow-md p-8">
+        <!-- Header -->
+        <div class="flex items-center justify-between pb-6 mb-6 border-b-2 border-gray-200">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">{{ data.kode_transaksi }}</h2>
+                <p class="text-sm text-gray-500 mt-1">{{ data.tanggal_transaksi.strftime('%d %B %Y, %H:%M') }}</p>
+            </div>
+            <div>
+                {% if data.tipe_transaksi == 'masuk' %}
+                <span class="bg-green-100 text-green-700 px-4 py-2 rounded-lg font-semibold">
+                    <i class="fa-solid fa-arrow-down mr-2"></i> MASUK
+                </span>
+                {% else %}
+                <span class="bg-orange-100 text-orange-700 px-4 py-2 rounded-lg font-semibold">
+                    <i class="fa-solid fa-arrow-up mr-2"></i> KELUAR
+                </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Detail Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- Barang Info -->
+            <div class="bg-blue-50 p-6 rounded-lg border border-blue-200">
+                <h3 class="font-bold text-gray-700 mb-4 flex items-center">
+                    <i class="fa-solid fa-box mr-2 text-blue-600"></i> Informasi Barang
+                </h3>
+                <div class="space-y-3">
+                    <div>
+                        <p class="text-xs text-gray-500">Kode Barang</p>
+                        <p class="font-semibold">{{ data.barang.kode_barang }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500">Nama Barang</p>
+                        <p class="font-semibold text-lg">{{ data.barang.nama_barang }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500">Kategori</p>
+                        <p class="font-semibold">{{ data.barang.kategori.nama_kategori }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500">Stok Saat Ini</p>
+                        <p class="font-semibold">{{ data.barang.stok }} {{ data.barang.satuan }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transaction Info -->
+            <div class="bg-emerald-50 p-6 rounded-lg border border-emerald-200">
+                <h3 class="font-bold text-gray-700 mb-4 flex items-center">
+                    <i class="fa-solid fa-receipt mr-2 text-emerald-600"></i> Informasi Transaksi
+                </h3>
+                <div class="space-y-3">
+                    {% if data.supplier %}
+                    <div>
+                        <p class="text-xs text-gray-500">Supplier</p>
+                        <p class="font-semibold">{{ data.supplier.nama_supplier }}</p>
+                    </div>
+                    {% endif %}
+                    <div>
+                        <p class="text-xs text-gray-500">Jumlah</p>
+                        <p class="font-semibold text-2xl text-emerald-600">
+                            {{ data.jumlah }} {{ data.barang.satuan }}
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500">Harga Satuan</p>
+                        <p class="font-semibold">Rp {{ "{:,}".format(data.harga_satuan).replace(',', '.') }}</p>
+                    </div>
+                    <div class="pt-3 border-t border-emerald-300">
+                        <p class="text-xs text-gray-500">Total Harga</p>
+                        <p class="font-bold text-2xl text-emerald-700">
+                            Rp {{ "{:,}".format(data.total_harga).replace(',', '.') }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Keterangan -->
+        {% if data.keterangan %}
+        <div class="bg-gray-50 p-6 rounded-lg border border-gray-200 mb-6">
+            <h3 class="font-bold text-gray-700 mb-2 flex items-center">
+                <i class="fa-solid fa-note-sticky mr-2 text-gray-600"></i> Keterangan
+            </h3>
+            <p class="text-gray-700">{{ data.keterangan }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Metadata -->
+        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 text-sm text-gray-600">
+            <div class="flex justify-between items-center">
+                <div>
+                    <i class="fa-solid fa-user mr-2"></i>
+                    Dibuat oleh: <strong>{{ data.created_by }}</strong>
+                </div>
+                <div>
+                    <i class="fa-solid fa-clock mr-2"></i>
+                    {{ data.created_at.strftime('%d/%m/%Y %H:%M') }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex gap-4 mt-8">
+            <a
+                href="/transaksi/hapus/{{ data.id }}"
+                onclick="return confirm('Yakin ingin menghapus transaksi ini? Stok akan dikembalikan.')"
+                class="flex-1 bg-red-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-red-700 transition duration-300 text-center"
+            >
+                <i class="fa-solid fa-trash mr-2"></i> Hapus Transaksi
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

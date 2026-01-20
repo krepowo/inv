@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}Transaksi{% endblock %}
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-800">Transaksi Inventory</h1>
+        <p class="text-gray-500 text-sm mt-1">Riwayat transaksi barang masuk dan keluar</p>
+    </div>
+    <div class="flex gap-2">
+        <a href="/transaksi/tambah?tipe=masuk"
+            class="bg-green-600 text-white px-5 py-2.5 rounded-lg hover:bg-green-700 shadow-md transition duration-300 flex items-center">
+            <i class="fa-solid fa-arrow-down mr-2"></i> Barang Masuk
+        </a>
+        <a href="/transaksi/tambah?tipe=keluar"
+            class="bg-orange-600 text-white px-5 py-2.5 rounded-lg hover:bg-orange-700 shadow-md transition duration-300 flex items-center">
+            <i class="fa-solid fa-arrow-up mr-2"></i> Barang Keluar
+        </a>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <div class="bg-green-50 rounded-lg shadow-md p-6 border-l-4 border-green-500">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-green-700 text-sm font-medium">Total Transaksi Masuk</p>
+                <h3 class="text-2xl font-bold text-green-800 mt-2">Rp {{ "{:,}".format(total_masuk).replace(',', '.') }}</h3>
+            </div>
+            <div class="bg-green-100 rounded-full p-4">
+                <i class="fa-solid fa-arrow-down text-green-600 text-2xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-orange-50 rounded-lg shadow-md p-6 border-l-4 border-orange-500">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-orange-700 text-sm font-medium">Total Transaksi Keluar</p>
+                <h3 class="text-2xl font-bold text-orange-800 mt-2">Rp {{ "{:,}".format(total_keluar).replace(',', '.') }}</h3>
+            </div>
+            <div class="bg-orange-100 rounded-full p-4">
+                <i class="fa-solid fa-arrow-up text-orange-600 text-2xl"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter -->
+<div class="bg-white rounded-lg shadow-md p-4 mb-6">
+    <form method="GET" class="flex gap-4">
+        <div class="flex-1">
+            <input type="text" name="search" placeholder="Cari kode transaksi atau nama barang..."
+                value="{{ request.args.get('search', '') }}"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+        <div class="w-48">
+            <select name="tipe" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                <option value="">Semua Tipe</option>
+                <option value="masuk" {% if request.args.get('tipe') == 'masuk' %}selected{% endif %}>Masuk</option>
+                <option value="keluar" {% if request.args.get('tipe') == 'keluar' %}selected{% endif %}>Keluar</option>
+            </select>
+        </div>
+        <button type="submit" class="bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition">
+            <i class="fa-solid fa-search mr-2"></i> Cari
+        </button>
+    </form>
+</div>
+
+<div class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
+    <table class="min-w-full w-full table-auto">
+        <thead>
+            <tr class="bg-emerald-600 text-white text-sm leading-normal">
+                <th class="py-3 px-4 text-left">Tanggal</th>
+                <th class="py-3 px-4 text-left">Kode</th>
+                <th class="py-3 px-4 text-center">Tipe</th>
+                <th class="py-3 px-4 text-left">Barang</th>
+                <th class="py-3 px-4 text-center">Jumlah</th>
+                <th class="py-3 px-4 text-right">Total</th>
+                <th class="py-3 px-4 text-center">Aksi</th>
+            </tr>
+        </thead>
+        <tbody class="text-gray-600 text-sm">
+            {% for trans in data %}
+            <tr class="border-b border-gray-200 hover:bg-gray-50 transition">
+                <td class="py-3 px-4 text-left text-xs">{{ trans.tanggal_transaksi.strftime('%d/%m/%Y %H:%M') }}</td>
+                <td class="py-3 px-4 text-left font-mono text-xs">{{ trans.kode_transaksi }}</td>
+                <td class="py-3 px-4 text-center">
+                    {% if trans.tipe_transaksi == 'masuk' %}
+                    <span class="bg-green-100 text-green-700 py-1 px-3 rounded-full text-xs font-semibold">
+                        <i class="fa-solid fa-arrow-down mr-1"></i> Masuk
+                    </span>
+                    {% else %}
+                    <span class="bg-orange-100 text-orange-700 py-1 px-3 rounded-full text-xs font-semibold">
+                        <i class="fa-solid fa-arrow-up mr-1"></i> Keluar
+                    </span>
+                    {% endif %}
+                </td>
+                <td class="py-3 px-4 text-left">
+                    <div>
+                        <p class="font-medium">{{ trans.barang.nama_barang }}</p>
+                        {% if trans.supplier %}
+                        <p class="text-xs text-gray-500">Supplier: {{ trans.supplier.nama_supplier }}</p>
+                        {% endif %}
+                    </div>
+                </td>
+                <td class="py-3 px-4 text-center font-bold">{{ trans.jumlah }} {{ trans.barang.satuan }}</td>
+                <td class="py-3 px-4 text-right font-mono text-xs">Rp {{ "{:,}".format(trans.total_harga).replace(',', '.') }}</td>
+                <td class="py-3 px-4 text-center">
+                    <div class="flex item-center justify-center gap-2">
+                        <a href="/transaksi/detail/{{ trans.id }}"
+                            class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 flex items-center justify-center transition"
+                            title="Detail">
+                            <i class="fa-solid fa-eye text-xs"></i>
+                        </a>
+                        <a href="/transaksi/hapus/{{ trans.id }}"
+                            onclick="return confirm('Yakin ingin menghapus transaksi ini? Stok akan dikembalikan.')"
+                            class="w-8 h-8 rounded-full bg-red-100 text-red-600 hover:bg-red-200 flex items-center justify-center transition"
+                            title="Hapus">
+                            <i class="fa-solid fa-trash text-xs"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" class="py-8 text-center text-gray-500">
+                    <i class="fa-solid fa-inbox text-4xl mb-2"></i>
+                    <p>Tidak ada data transaksi</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="mt-4 text-sm text-gray-600">
+    Total: <strong>{{ data|length }}</strong> transaksi
+</div>
+{% endblock %}

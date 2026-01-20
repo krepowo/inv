@@ -1,63 +1,126 @@
-{% extends "base.html" %} {% block title %}Dashboard{% endblock %} {% block content %}
+{% extends "base.html" %}
+{% block title %}Daftar Barang{% endblock %}
+{% block content %}
 <div class="flex justify-between items-center mb-6">
     <div>
-        <h1 class="text-3xl font-bold text-emerald-800">Stok Barang</h1>
-        <p class="text-gray-500 text-sm mt-1">Kelola inventory barang dengan mudah.</p>
+        <h1 class="text-3xl font-bold text-gray-800">Daftar Barang</h1>
+        <p class="text-gray-500 text-sm mt-1">Kelola inventory barang Anda</p>
     </div>
-    <a
-        href="/tambah"
-        class="bg-emerald-600 text-white px-5 py-2.5 rounded-lg hover:bg-emerald-700 shadow-md transition duration-300 flex items-center"
-    >
+    <a href="/inventory/tambah"
+        class="bg-emerald-600 text-white px-5 py-2.5 rounded-lg hover:bg-emerald-700 shadow-md transition duration-300 flex items-center">
         <i class="fa-solid fa-plus-circle mr-2"></i> Tambah Barang
     </a>
 </div>
 
+<!-- Search and Filter -->
+<div class="bg-white rounded-lg shadow-md p-4 mb-6">
+    <form method="GET" class="flex gap-4">
+        <div class="flex-1">
+            <input type="text" name="search" placeholder="Cari nama atau kode barang..."
+                value="{{ request.args.get('search', '') }}"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+        <div class="w-64">
+            <select name="kategori" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                <option value="">Semua Kategori</option>
+                {% for kat in kategori %}
+                <option value="{{ kat.id }}" {% if request.args.get('kategori') == kat.id|string %}selected{% endif %}>
+                    {{ kat.nama_kategori }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition">
+            <i class="fa-solid fa-search mr-2"></i> Cari
+        </button>
+    </form>
+</div>
+
+{% if low_stock_count > 0 %}
+<div class="bg-red-50 border border-red-300 rounded-lg p-4 mb-6">
+    <p class="text-red-800">
+        <i class="fa-solid fa-exclamation-triangle mr-2"></i>
+        <strong>Perhatian!</strong> Ada {{ low_stock_count }} barang dengan stok menipis.
+    </p>
+</div>
+{% endif %}
+
 <div class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
     <table class="min-w-full w-full table-auto">
-        <
         <thead>
-            <tr class="bg-emerald-500 text-white uppercase text-xs leading-normal tracking-wider">
-                <th class="py-3 px-6 text-left rounded-tl-lg">Nama Barang</th>
-                <th class="py-3 px-6 text-left">Kategori</th>
-                <th class="py-3 px-6 text-center">Stok</th>
-                <th class="py-3 px-6 text-right">Harga (Rp)</th>
-                <th class="py-3 px-6 text-center rounded-tr-lg">Aksi</th>
+            <tr class="bg-emerald-600 text-white text-sm leading-normal">
+                <th class="py-3 px-4 text-left">Kode</th>
+                <th class="py-3 px-4 text-left">Nama Barang</th>
+                <th class="py-3 px-4 text-left">Kategori</th>
+                <th class="py-3 px-4 text-left">Supplier</th>
+                <th class="py-3 px-4 text-center">Stok</th>
+                <th class="py-3 px-4 text-right">Harga Beli</th>
+                <th class="py-3 px-4 text-right">Harga Jual</th>
+                <th class="py-3 px-4 text-center">Aksi</th>
             </tr>
         </thead>
-        <tbody class="text-gray-600 text-sm font-light">
-            {% for item, kat in data %}
-            <tr class="border-b border-gray-200 hover:bg-emerald-50 transition duration-150">
-                <td class="py-3 px-6 text-left font-medium">{{ item.nama_barang }}</td>
-                <td class="py-3 px-6 text-left">
-                    <span class="bg-emerald-100 text-emerald-700 py-1 px-3 rounded-full text-xs font-semibold"
-                        >{{ kat.nama_kategori }}</span
-                    >
+        <tbody class="text-gray-600 text-sm">
+            {% for item in data %}
+            <tr class="border-b border-gray-200 hover:bg-gray-50 transition {% if item.is_low_stock() %}bg-red-50{% endif %}">
+                <td class="py-3 px-4 text-left font-mono text-xs">{{ item.kode_barang }}</td>
+                <td class="py-3 px-4 text-left font-medium">
+                    {{ item.nama_barang }}
+                    {% if item.is_low_stock() %}
+                    <span class="ml-2 text-red-600 text-xs">
+                        <i class="fa-solid fa-exclamation-triangle"></i>
+                    </span>
+                    {% endif %}
                 </td>
-                <td class="py-3 px-6 text-center">{{ item.stok }}</td>
-                <td class="py-3 px-6 text-right font-mono">Rp {{ "{:,.0f}".format(item.harga).replace(',', '.') }}</td>
-
-                <td class="py-3 px-6 text-center">
-                    <div class="flex item-center justify-center">
-                        <a
-                            href="/edit/{{ item.id }}"
-                            class="w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 hover:bg-yellow-200 flex items-center justify-center mx-1 transition"
-                            title="Edit"
-                        >
-                            <i class="fa-solid fa-pen"></i>
+                <td class="py-3 px-4 text-left">
+                    <span class="bg-blue-100 text-blue-700 py-1 px-3 rounded-full text-xs font-semibold">
+                        {{ item.kategori.nama_kategori if item.kategori else '-' }}
+                    </span>
+                </td>
+                <td class="py-3 px-4 text-left text-xs">
+                    {{ item.supplier.nama_supplier if item.supplier else '-' }}
+                </td>
+                <td class="py-3 px-4 text-center">
+                    <span class="font-bold {% if item.is_low_stock() %}text-red-600{% else %}text-gray-800{% endif %}">
+                        {{ item.stok }}
+                    </span>
+                    <span class="text-xs text-gray-500">{{ item.satuan }}</span>
+                </td>
+                <td class="py-3 px-4 text-right font-mono text-xs">
+                    Rp {{ "{:,}".format(item.harga_beli).replace(',', '.') }}
+                </td>
+                <td class="py-3 px-4 text-right font-mono text-xs">
+                    Rp {{ "{:,}".format(item.harga_jual).replace(',', '.') }}
+                </td>
+                <td class="py-3 px-4 text-center">
+                    <div class="flex item-center justify-center gap-2">
+                        <a href="/inventory/edit/{{ item.id }}"
+                            class="w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 hover:bg-yellow-200 flex items-center justify-center transition"
+                            title="Edit">
+                            <i class="fa-solid fa-pen text-xs"></i>
                         </a>
-                        <a
-                            href="/hapus/{{ item.id }}"
+                        <a href="/inventory/hapus/{{ item.id }}"
                             onclick="return confirm('Yakin ingin menghapus barang ini?')"
-                            class="w-8 h-8 rounded-full bg-red-100 text-red-600 hover:bg-red-200 flex items-center justify-center mx-1 transition"
-                            title="Hapus"
-                        >
-                            <i class="fa-solid fa-trash"></i>
+                            class="w-8 h-8 rounded-full bg-red-100 text-red-600 hover:bg-red-200 flex items-center justify-center transition"
+                            title="Hapus">
+                            <i class="fa-solid fa-trash text-xs"></i>
                         </a>
                     </div>
                 </td>
             </tr>
-            {% else %} {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="8" class="py-8 text-center text-gray-500">
+                    <i class="fa-solid fa-inbox text-4xl mb-2"></i>
+                    <p>Tidak ada data barang</p>
+                </td>
+            </tr>
+            {% endfor %}
         </tbody>
     </table>
 </div>
+
+<div class="mt-4 text-sm text-gray-600">
+    Total: <strong>{{ data|length }}</strong> barang
+</div>
+
 {% endblock %}
