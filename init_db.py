@@ -20,7 +20,7 @@ def init_db():
         except Exception as e:
             print(f"❌ Gagal membuat tabel: {e}")
             print("\n⚠️  Silakan periksa:")
-            print("   1. Pastikan XAMPP nyala")
+            print("   1. Pastikan XAMPP/Laragon nyala")
             print("   2. Database bernama'inventory_uas' ada")
             
             return
