@@ -7,13 +7,13 @@ import string
 import random
 
 def generate_kode_barang():
-    """Generate unique product code"""
+    """Buat kode barang yang unik"""
     prefix = 'BRG'
     random_str = ''.join(random.choices(string.digits, k=8))
     return f"{prefix}{random_str}"
 
 def index():
-    """Display all inventory items"""
+    """Tampilkan semua barang inventory"""
     try:
         search = request.args.get('search', '')
         kategori_filter = request.args.get('kategori', '')
@@ -32,24 +32,24 @@ def index():
         list_barang = query.all()
         list_kategori = Kategori.query.all()
         
-        # Count low stock items
+        # Hitung jumlah barang stok rendah
         low_stock_count = sum(1 for b in list_barang if b.is_low_stock())
         
-        return render_template('index.html', 
+        return render_template('barang/index.html', 
                              data=list_barang, 
                              kategori=list_kategori,
                              low_stock_count=low_stock_count)
     except Exception as e:
         flash(f'Terjadi kesalahan: {str(e)}', 'danger')
-        return render_template('index.html', data=[], kategori=[])
+        return render_template('barang/index.html', data=[], kategori=[], low_stock_count=0)
 
 def form_tambah():
-    """Display form to add new item"""
+    """Tampilkan form untuk tambah barang baru"""
     try:
         list_kategori = Kategori.query.all()
         list_supplier = Supplier.query.all()
         kode_barang = generate_kode_barang()
-        return render_template('tambah.html', 
+        return render_template('barang/tambah.html', 
                              kategori=list_kategori,
                              supplier=list_supplier,
                              kode_barang=kode_barang)
@@ -58,7 +58,7 @@ def form_tambah():
         return redirect(url_for('inventory_index'))
 
 def save():
-    """Save new inventory item with validation"""
+    """Simpan barang inventory baru dengan validasi"""
     try:
         # Validasi input
         nama = request.form.get('nama_barang', '').strip()
@@ -85,13 +85,13 @@ def save():
             flash('Kategori wajib dipilih!', 'warning')
             return redirect(url_for('inventory_add'))
         
-        # Check if kode_barang already exists
+        # Cek apakah kode_barang sudah ada
         existing = Barang.query.filter_by(kode_barang=kode_barang).first()
         if existing:
             flash('Kode barang sudah digunakan!', 'warning')
             return redirect(url_for('inventory_add'))
         
-        # Convert to appropriate types
+        # Konversi ke tipe data yang sesuai
         try:
             harga_beli = int(harga_beli)
             harga_jual = int(harga_jual)
@@ -101,7 +101,7 @@ def save():
             flash('Harga dan stok harus berupa angka!', 'warning')
             return redirect(url_for('inventory_add'))
         
-        # Create new item
+        # Buat barang baru
         input_barang = Barang(
             kode_barang=kode_barang,
             nama_barang=nama, 
@@ -125,7 +125,7 @@ def save():
         return redirect(url_for('inventory_add'))
     
 def form_edit(id):
-    """Display form to edit item"""
+    """Tampilkan form untuk edit barang"""
     try:
         barang = Barang.query.get(id)
         if not barang:
@@ -134,7 +134,7 @@ def form_edit(id):
         
         list_kategori = Kategori.query.all()
         list_supplier = Supplier.query.all()
-        return render_template('edit.html', 
+        return render_template('barang/edit.html', 
                              data=barang, 
                              kategori=list_kategori,
                              supplier=list_supplier)
@@ -143,14 +143,14 @@ def form_edit(id):
         return redirect(url_for('inventory_index'))
 
 def update(id):
-    """Update existing inventory item with validation"""
+    """Perbarui barang yang ada dengan validasi"""
     try:
         barang = Barang.query.get(id)
         if not barang:
             flash('Data barang tidak ditemukan!', 'warning')
             return redirect(url_for('inventory_index'))
         
-        # Get form data
+        # Ambil data form
         nama = request.form.get('nama_barang', '').strip()
         kode_barang = request.form.get('kode_barang', '').strip()
         harga_beli = request.form.get('harga_beli', 0)
@@ -171,14 +171,14 @@ def update(id):
             flash('Kategori wajib dipilih!', 'warning')
             return redirect(url_for('inventory_edit', id=id))
         
-        # Check if kode_barang is changed and already exists
+        # Cek apakah kode_barang diubah dan sudah ada
         if kode_barang != barang.kode_barang:
             existing = Barang.query.filter_by(kode_barang=kode_barang).first()
             if existing:
                 flash('Kode barang sudah digunakan!', 'warning')
                 return redirect(url_for('inventory_edit', id=id))
         
-        # Convert to appropriate types
+        # Konversi ke tipe data yang sesuai
         try:
             harga_beli = int(harga_beli)
             harga_jual = int(harga_jual)
@@ -188,7 +188,7 @@ def update(id):
             flash('Harga dan stok harus berupa angka!', 'warning')
             return redirect(url_for('inventory_edit', id=id))
         
-        # Update item
+        # Update barang
         barang.kode_barang = kode_barang
         barang.nama_barang = nama
         barang.deskripsi = deskripsi
@@ -209,7 +209,7 @@ def update(id):
         return redirect(url_for('inventory_edit', id=id))
 
 def delete(id):
-    """Delete inventory item"""
+    """Hapus barang inventory"""
     try:
         barang = Barang.query.get(id)
         if not barang:

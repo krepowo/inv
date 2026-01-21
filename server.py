@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 
-# Load environment variables first
+# Load variabel environment terlebih dahulu
 load_dotenv()
 
 from app import app

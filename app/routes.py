@@ -11,7 +11,7 @@ from app.model.barang import Barang
 from app.model.transaksi import Transaksi
 from app import db
 
-# Decorator untuk check login
+# Dekorator untuk cek login
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -21,7 +21,7 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# Decorator untuk check admin role
+# Dekorator untuk cek role admin
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -34,7 +34,7 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# Auth Routes
+# Rute Autentikasi
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     return UserController.login()
@@ -53,20 +53,20 @@ def register():
 def user_list():
     return UserController.user_list()
 
-# Dashboard
+# Halaman Dashboard
 @app.route('/')
 @login_required
 def dashboard():
     try:
-        # Get statistics
+        # Ambil statistik
         total_barang = Barang.query.count()
         total_stok = db.session.query(db.func.sum(Barang.stok)).scalar() or 0
         low_stock_items = Barang.query.filter(Barang.stok <= Barang.stok_minimum).all()
         
-        # Recent transactions
+        # Transaksi terbaru
         recent_transactions = Transaksi.query.order_by(Transaksi.tanggal_transaksi.desc()).limit(5).all()
         
-        # Transaction summary (this month)
+        # Ringkasan transaksi (bulan ini)
         from datetime import datetime, timedelta
         start_of_month = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         

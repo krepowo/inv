@@ -18,15 +18,15 @@ class Barang(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # Relationship
+    # Relasi
     transaksi = db.relationship('Transaksi', backref='barang', lazy='dynamic')
     
     def is_low_stock(self):
-        """Check if stock is below minimum threshold"""
+        """Cek apakah stok di bawah batas minimum"""
         return self.stok <= self.stok_minimum
     
     def update_stok(self, jumlah, tipe):
-        """Update stock based on transaction type"""
+        """Perbarui stok berdasarkan tipe transaksi"""
         if tipe == 'masuk':
             self.stok += jumlah
         elif tipe == 'keluar':

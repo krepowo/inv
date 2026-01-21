@@ -4,7 +4,7 @@ from sqlalchemy import text
 from flask import render_template, request, redirect, url_for, flash
 
 def index():
-    """Display all suppliers"""
+    """Tampilkan semua supplier"""
     try:
         search = request.args.get('search', '')
         
@@ -16,17 +16,17 @@ def index():
             )
         
         data = query.order_by(Supplier.nama_supplier).all()
-        return render_template('supplier_index.html', data=data)
+        return render_template('supplier/index.html', data=data)
     except Exception as e:
         flash(f'Terjadi kesalahan: {str(e)}', 'danger')
-        return render_template('supplier_index.html', data=[])
+        return render_template('supplier/index.html', data=[])
 
 def form_tambah():
-    """Display form to add new supplier"""
-    return render_template('supplier_tambah.html')
+    """Tampilkan form untuk menambah supplier baru"""
+    return render_template('supplier/tambah.html')
 
 def save():
-    """Save new supplier with validation"""
+    """Simpan supplier baru dengan validasi"""
     try:
         nama = request.form.get('nama_supplier', '').strip()
         kontak = request.form.get('kontak_supplier', '').strip()
@@ -34,7 +34,7 @@ def save():
         alamat = request.form.get('alamat', '').strip()
         keterangan = request.form.get('keterangan', '').strip()
         
-        # Validation
+        # Validasi
         if not nama:
             flash('Nama supplier wajib diisi!', 'warning')
             return redirect(url_for('supplier_add'))
@@ -43,7 +43,7 @@ def save():
             flash('Kontak supplier wajib diisi!', 'warning')
             return redirect(url_for('supplier_add'))
         
-        # Check if supplier already exists
+        # Cek apakah supplier sudah ada
         existing = Supplier.query.filter_by(nama_supplier=nama).first()
         if existing:
             flash('Supplier dengan nama tersebut sudah ada!', 'warning')
@@ -67,19 +67,19 @@ def save():
         return redirect(url_for('supplier_add'))
 
 def form_edit(id):
-    """Display form to edit supplier"""
+    """Tampilkan form untuk edit supplier"""
     try:
         supplier = Supplier.query.get(id)
         if not supplier:
             flash('Supplier tidak ditemukan!', 'warning')
             return redirect(url_for('supplier_index'))
-        return render_template('supplier_edit.html', data=supplier)
+        return render_template('supplier/edit.html', data=supplier)
     except Exception as e:
         flash(f'Gagal memuat form: {str(e)}', 'danger')
         return redirect(url_for('supplier_index'))
 
 def update(id):
-    """Update existing supplier with validation"""
+    """Perbarui supplier yang ada dengan validasi"""
     try:
         supplier = Supplier.query.get(id)
         if not supplier:
@@ -92,7 +92,7 @@ def update(id):
         alamat = request.form.get('alamat', '').strip()
         keterangan = request.form.get('keterangan', '').strip()
         
-        # Validation
+        # Validasi
         if not nama:
             flash('Nama supplier wajib diisi!', 'warning')
             return redirect(url_for('supplier_edit', id=id))
@@ -101,7 +101,7 @@ def update(id):
             flash('Kontak supplier wajib diisi!', 'warning')
             return redirect(url_for('supplier_edit', id=id))
         
-        # Check if supplier name already exists (excluding current)
+        # Cek apakah nama supplier sudah ada (kecuali data sekarang)
         existing = Supplier.query.filter(
             Supplier.nama_supplier == nama,
             Supplier.id != id
@@ -125,14 +125,14 @@ def update(id):
         return redirect(url_for('supplier_edit', id=id))
 
 def delete(id):
-    """Delete supplier"""
+    """Hapus supplier"""
     try:
         supplier = Supplier.query.get(id)
         if not supplier:
             flash('Supplier tidak ditemukan!', 'warning')
             return redirect(url_for('supplier_index'))
         
-        # Check if supplier has items
+        # Cek apakah supplier memiliki barang
         if supplier.barang.count() > 0:
             flash('Tidak dapat menghapus supplier yang masih terhubung dengan barang!', 'danger')
             return redirect(url_for('supplier_index'))
@@ -149,18 +149,18 @@ def delete(id):
         return redirect(url_for('supplier_index'))
 
 def detail(id):
-    """Display supplier details with associated items"""
+    """Tampilkan detail supplier dengan barang terkait"""
     try:
         supplier = Supplier.query.get(id)
         if not supplier:
             flash('Supplier tidak ditemukan!', 'warning')
             return redirect(url_for('supplier_index'))
         
-        # Get items from this supplier
+        # Ambil barang dari supplier ini
         barang_list = supplier.barang.all()
         transaksi_list = supplier.transaksi.order_by(text('tanggal_transaksi desc')).limit(10).all()
         
-        return render_template('supplier_detail.html', 
+        return render_template('supplier/detail.html', 
                              supplier=supplier,
                              barang_list=barang_list,
                              transaksi_list=transaksi_list)

@@ -19,7 +19,7 @@ class Transaksi(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     def calculate_total(self):
-        """Calculate total price based on quantity and unit price"""
+        """Hitung total harga berdasarkan jumlah dan harga satuan"""
         self.total_harga = self.jumlah * self.harga_satuan
     
     def __repr__(self):

@@ -1,8 +1,8 @@
-"""Initialize database with default data"""
+"""Inisialisasi database dengan data default"""
 import os
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
+# Load variabel environment dari file .env
 load_dotenv()
 
 from app import app, db
@@ -10,40 +10,33 @@ from app.model.user import User
 from app.model.kategori import Kategori
 
 def init_db():
-    """Create tables and insert default data"""
     with app.app_context():
-        # Debug: Print database URI (without password)
         db_uri = app.config['SQLALCHEMY_DATABASE_URI']
         safe_uri = db_uri.replace(os.environ.get('DB_PASSWORD', ''), '****')
-        print(f"🔗 Connecting to: {safe_uri}")
         
-        # Create all tables
         try:
             db.create_all()
-            print("✓ Database tables created successfully!")
+            print("✓ Berhasil membuat semua tabel!")
         except Exception as e:
-            print(f"❌ Error creating tables: {e}")
-            print("\n⚠️  Please check:")
-            print("   1. MySQL server is running")
-            print("   2. Database 'inventory_uas' exists")
-            print("   3. .env file is configured correctly")
+            print(f"❌ Gagal membuat tabel: {e}")
+            print("\n⚠️  Silakan periksa:")
+            print("   1. Pastikan XAMPP nyala")
+            print("   2. Database bernama'inventory_uas' ada")
+            
             return
         
-        # Check if admin user exists
         admin = User.query.filter_by(username='admin').first()
         if not admin:
-            # Create default admin user
             admin = User(
                 username='admin',
-                email='admin@inventory.com',
+                email='admin@gmail.com',
                 role='admin',
                 is_active=True
             )
             admin.set_password('admin123')
             db.session.add(admin)
-            print("✓ Admin user created (username: admin, password: admin123)")
+            print("✓ Admin user dibuat (username: admin, password: admin123)")
         
-        # Create default categories if not exist
         default_categories = [
             {'nama': 'Elektronik', 'desc': 'Barang elektronik dan gadget'},
             {'nama': 'Furniture', 'desc': 'Furniture dan perlengkapan kantor'},
@@ -61,15 +54,13 @@ def init_db():
                 )
                 db.session.add(kategori)
         
-        print("✓ Default categories created")
+        print("✓ Kategori default berhasil dibuat")
         
-        # Commit all changes
         db.session.commit()
-        print("\n✅ Database initialization completed!")
-        print("\n📝 Default login credentials:")
+        print("\n✅ Setup database selesai!")
+        print("\n📝 Info login admin:")
         print("   Username: admin")
         print("   Password: admin123")
-        print("\n⚠️  Please change the default password after first login!")
 
 if __name__ == '__main__':
     init_db()

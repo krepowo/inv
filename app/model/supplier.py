@@ -13,7 +13,7 @@ class Supplier(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # Relationship
+    # Relasi
     barang = db.relationship('Barang', backref='supplier', lazy='dynamic')
     transaksi = db.relationship('Transaksi', backref='supplier', lazy='dynamic')
     

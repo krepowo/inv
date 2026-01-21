@@ -8,14 +8,14 @@ import string
 import random
 
 def generate_kode_transaksi(tipe):
-    """Generate unique transaction code"""
+    """Buat kode transaksi yang unik"""
     prefix = 'TRM' if tipe == 'masuk' else 'TRK'  # TRM = Transaksi Masuk, TRK = Transaksi Keluar
     date_str = datetime.now().strftime('%Y%m%d')
     random_str = ''.join(random.choices(string.digits, k=4))
     return f"{prefix}{date_str}{random_str}"
 
 def index():
-    """Display all transactions"""
+    """Tampilkan semua transaksi"""
     try:
         tipe_filter = request.args.get('tipe', '')
         search = request.args.get('search', '')
@@ -33,29 +33,29 @@ def index():
         
         data = query.all()
         
-        # Calculate summary
+        # Hitung ringkasan
         total_masuk = db.session.query(db.func.sum(Transaksi.total_harga))\
             .filter(Transaksi.tipe_transaksi == 'masuk').scalar() or 0
         total_keluar = db.session.query(db.func.sum(Transaksi.total_harga))\
             .filter(Transaksi.tipe_transaksi == 'keluar').scalar() or 0
         
-        return render_template('transaksi_index.html', 
+        return render_template('transaksi/index.html', 
                              data=data,
                              total_masuk=total_masuk,
                              total_keluar=total_keluar)
     except Exception as e:
         flash(f'Terjadi kesalahan: {str(e)}', 'danger')
-        return render_template('transaksi_index.html', data=[])
+        return render_template('transaksi/index.html', data=[], total_masuk=0, total_keluar=0)
 
 def form_tambah():
-    """Display form to add new transaction"""
+    """Tampilkan form untuk tambah transaksi baru"""
     try:
         tipe = request.args.get('tipe', 'masuk')
         list_barang = Barang.query.order_by(Barang.nama_barang).all()
         list_supplier = Supplier.query.order_by(Supplier.nama_supplier).all()
         kode_transaksi = generate_kode_transaksi(tipe)
         
-        return render_template('transaksi_tambah.html',
+        return render_template('transaksi/tambah.html',
                              tipe=tipe,
                              list_barang=list_barang,
                              list_supplier=list_supplier,
@@ -65,7 +65,7 @@ def form_tambah():
         return redirect(url_for('transaksi_index'))
 
 def save():
-    """Save new transaction and update stock"""
+    """Simpan transaksi baru dan update stok"""
     try:
         kode_transaksi = request.form.get('kode_transaksi', '').strip()
         tipe_transaksi = request.form.get('tipe_transaksi', 'masuk')
@@ -75,7 +75,7 @@ def save():
         harga_satuan = request.form.get('harga_satuan', 0)
         keterangan = request.form.get('keterangan', '').strip()
         
-        # Validation
+        # Validasi
         if not kode_transaksi:
             flash('Kode transaksi wajib diisi!', 'warning')
             return redirect(url_for('transaksi_add'))
@@ -84,7 +84,7 @@ def save():
             flash('Barang wajib dipilih!', 'warning')
             return redirect(url_for('transaksi_add'))
         
-        # Convert to appropriate types
+        # Konversi ke tipe data yang sesuai
         try:
             jumlah = int(jumlah)
             harga_satuan = int(harga_satuan)
@@ -96,24 +96,24 @@ def save():
             flash('Jumlah harus lebih dari 0!', 'warning')
             return redirect(url_for('transaksi_add'))
         
-        # Get barang
+        # Ambil data barang
         barang = Barang.query.get(barang_id)
         if not barang:
             flash('Barang tidak ditemukan!', 'warning')
             return redirect(url_for('transaksi_add'))
         
-        # Check stock for keluar transaction
+        # Cek stok untuk transaksi keluar
         if tipe_transaksi == 'keluar' and barang.stok < jumlah:
             flash(f'Stok tidak mencukupi! Stok tersedia: {barang.stok}', 'danger')
             return redirect(url_for('transaksi_add'))
         
-        # Check if kode_transaksi already exists
+        # Cek apakah kode_transaksi sudah ada
         existing = Transaksi.query.filter_by(kode_transaksi=kode_transaksi).first()
         if existing:
             flash('Kode transaksi sudah digunakan!', 'warning')
             return redirect(url_for('transaksi_add'))
         
-        # Create transaction
+        # Buat transaksi
         transaksi = Transaksi(
             kode_transaksi=kode_transaksi,
             tipe_transaksi=tipe_transaksi,
@@ -126,7 +126,7 @@ def save():
         )
         transaksi.calculate_total()
         
-        # Update stock
+        # Update stok
         try:
             barang.update_stok(jumlah, tipe_transaksi)
         except ValueError as ve:
@@ -144,39 +144,39 @@ def save():
         return redirect(url_for('transaksi_add'))
 
 def detail(id):
-    """Display transaction details"""
+    """Tampilkan detail transaksi"""
     try:
         transaksi = Transaksi.query.get(id)
         if not transaksi:
             flash('Transaksi tidak ditemukan!', 'warning')
             return redirect(url_for('transaksi_index'))
         
-        return render_template('transaksi_detail.html', data=transaksi)
+        return render_template('transaksi/detail.html', data=transaksi)
     except Exception as e:
         flash(f'Gagal memuat detail: {str(e)}', 'danger')
         return redirect(url_for('transaksi_index'))
 
 def delete(id):
-    """Delete transaction and revert stock"""
+    """Hapus transaksi dan kembalikan stok"""
     try:
         transaksi = Transaksi.query.get(id)
         if not transaksi:
             flash('Transaksi tidak ditemukan!', 'warning')
             return redirect(url_for('transaksi_index'))
         
-        # Get barang
+        # Ambil barang
         barang = transaksi.barang
         
-        # Revert stock
+        # Kembalikan stok
         if transaksi.tipe_transaksi == 'masuk':
-            # Revert masuk = reduce stock
+            # Revert masuk = kurangi stok
             if barang.stok >= transaksi.jumlah:
                 barang.stok -= transaksi.jumlah
             else:
                 flash('Tidak dapat menghapus transaksi: stok tidak mencukupi untuk revert!', 'danger')
                 return redirect(url_for('transaksi_index'))
         else:
-            # Revert keluar = add stock
+            # Revert keluar = tambah stok
             barang.stok += transaksi.jumlah
         
         kode = transaksi.kode_transaksi
@@ -191,7 +191,7 @@ def delete(id):
         return redirect(url_for('transaksi_index'))
 
 def laporan():
-    """Display transaction report with date range filter"""
+    """Tampilkan laporan transaksi dengan filter tanggal"""
     try:
         start_date = request.args.get('start_date')
         end_date = request.args.get('end_date')
@@ -208,11 +208,11 @@ def laporan():
         
         data = query.all()
         
-        # Calculate totals
+        # Hitung total
         total_nilai = sum(t.total_harga for t in data)
         total_qty = sum(t.jumlah for t in data)
         
-        return render_template('transaksi_laporan.html',
+        return render_template('transaksi/laporan.html',
                              data=data,
                              total_nilai=total_nilai,
                              total_qty=total_qty,
@@ -221,4 +221,4 @@ def laporan():
                              tipe=tipe)
     except Exception as e:
         flash(f'Gagal memuat laporan: {str(e)}', 'danger')
-        return render_template('transaksi_laporan.html', data=[])
+        return render_template('transaksi/laporan.html', data=[])

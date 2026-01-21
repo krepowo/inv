@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
+# Load variabel environment dari file .env
 load_dotenv()
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -14,14 +14,14 @@ class Config(object):
     USERNAME = os.environ.get("DB_USERNAME", "root")
     PASSWORD = os.environ.get("DB_PASSWORD", "")
     
-    # Construct database URI
+    # Buat URI database
     SQLALCHEMY_DATABASE_URI = f'mysql+pymysql://{USERNAME}:{PASSWORD}@{HOST}/{DATABASE}'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_RECORD_QUERIES = True
     
-    # Debug config (remove in production)
+    # Debug config (hapus di production)
     @staticmethod
     def init_app(app):
-        # Print config for debugging (hide password)
+        # Tampilkan config untuk debugging (sembunyikan password)
         safe_uri = Config.SQLALCHEMY_DATABASE_URI.replace(Config.PASSWORD, '****')
         print(f"📊 Database: {safe_uri}")
